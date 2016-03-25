@@ -3,9 +3,11 @@ package exercise1;
 import java.lang.Math.*;
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.lang.*;
+import java.util.Scanner;
 
 public class LabyMaker {
 	public static final char START = 'X';
@@ -17,13 +19,13 @@ public class LabyMaker {
 	
 	public LabyMaker(int size)
 	{
-		this.size = size+2;
+		this.size = size;
 		laby = new char[this.size][this.size];
 		for(int i = 0; i < this.size; i++)
 		{
 				laby[0][i] = MUR;
 		}
-		for(int i = 1; i < this.size; i++)
+		for(int i = 1; i < this.size-1; i++)
 		{
 			for(int j = 0; j < this.size; j++)
 			{
@@ -44,289 +46,239 @@ public class LabyMaker {
 				laby[this.size-1][i] = MUR;
 		}
 	}
-	
-	//Divide&Conquer
-	/*public void DAC(int rowHaut, int rowLow, int colomnLeft, int colomnRight, Point enter, Point exit)
-	{
-		
-		int high = rowHaut - rowLow + 1;
-		int removalRow = 4;
-		if(enter.getY() != rowLow+1 && enter.getY() != rowHaut-1)
-		{
-			removalRow++;
-		}
-		if(enter.getY()!= exit.getY()&& exit.getY() != rowLow+1 && exit.getY() != rowHaut-1)
-		{
-			removalRow++;
-		}
-		boolean addRow;
-		if(high - removalRow > 0)
-		{
-			addRow = true;
-		}
-		else
-		{
-			addRow = false;
-		}
-		
-		int removalColomn = 4;
-		int wide = colomnRight - colomnLeft + 1;
-		if(enter.getX() != colomnLeft+1 && enter.getX() != colomnRight-1)
-		{
-			removalColomn++;
-		}
-		if(enter.getX()!= exit.getX()&& exit.getX() != colomnLeft+1 && exit.getX() != colomnRight-1)
-		{
-			removalColomn++;
-		}
-		boolean addColomn;
-		if(high - removalColomn > 0)
-		{
-			addColomn = true;
-		}
-		else
-		{
-			addColomn = false;
-		}
-		
-		if(addRow == false && addColomn == false)
-			return;
-		
-		
-		Random chose = new Random();
-		int rowMur = chose.nextInt(high-5);
-		if(addRow == true)
-		{
-			for(; rowMur == enter.getY()|| rowMur == exit.getY();)
-			{
-				rowMur = chose.nextInt(high-5);
-			}
-			for(int i = colomnLeft; i < colomnRight ;i++)
-			{
-				laby[rowLow + 2 + rowMur][i] = MUR;
-			}
-			
-		}
-		int colMur = chose.nextInt(wide-5);
-		if(addColomn == true)
-		{
-			for(; colMur == enter.getX()|| colMur == exit.getX();)
-			{
-				colMur = chose.nextInt(wide-5);
-			}
-			for(int i = rowLow; i < rowHaut ;i++)
-			{
-				laby[i][colomnLeft+ 2 + colMur] = MUR;
-			}
-		}
-		
-		boolean moreHole = chose.nextBoolean();
-		if(moreHole)	//���ŵ�ǽ���������������ŵ�ǽ����һ��
-		{
-			int rowHole = chose.nextInt(rowMur);         //�ڵ�0�е���ǽ֮��ѡһ�д�
-			laby[rowLow + 1 + rowHole][colomnLeft+ 2 + colMur] = SPACE;
 
-			rowHole = chose.nextInt(rowHaut-rowMur-4);         //�ں�ǽ�����һ��֮��ѡһ�д�
-			laby[rowHaut - 1 - rowHole][colomnLeft+ 2 + colMur] = SPACE;
-			
-			if(chose.nextBoolean())
-			{
-				int colHole = chose.nextInt(colMur);
-				laby[rowLow + 2 + rowMur][colomnLeft+ 1 + colHole] = SPACE;				
-			}
-			else
-			{
-				int colHole = chose.nextInt(colomnRight - colMur -4);
-				laby[rowLow + 2 + rowMur][colomnRight - colHole - 1] = SPACE;	
-			}
-		}
-		else           //���ŵ�ǽ���������������ŵ���һ��
-		{
-			int colHole = chose.nextInt(colMur);
-		    laby[rowLow + 2 + rowMur][colomnLeft+ 1 + colHole] = SPACE;
-			
-		    colHole = chose.nextInt(colomnRight-colMur-4);
-			laby[rowLow + 2 + rowMur][colomnRight - colHole - 1] = SPACE;
-			
-			if(chose.nextBoolean())
-			{
-				int rowHole = chose.nextInt(rowMur);
-				laby[rowLow + 1 + rowHole][colomnLeft+ 2 + colMur] = SPACE;			
-			}
-			else
-			{
-				int rowHole = chose.nextInt(rowHaut - rowMur -4);
-				laby[rowHaut - 1 - rowHole][colomnLeft+ 2 + colMur] = SPACE;	
-			}
-			
-		}
-		return;
-	}*/
-	
-	public void DAC(int rowHaut, int rowLow, int colomnLeft, int colomnRight, Point...door)
+	/*
+	 * 作用：检测上下界之间能不能建墙
+	 * 输入：上下界及出入口的位置
+	 * 返回：能建墙->可以建墙的位置
+	 * 		 不能建墙->空表
+	 */
+	@SuppressWarnings("unused")
+	public ArrayList<Integer> createMurable(int lowerBound, int upperBound, int...door)
 	{
 		int numDoor = door.length;	
-		int high = rowHaut - rowLow + 1;
-		int removalRow = 4;
-		
-		ArrayList<Integer> doorY = new ArrayList<Integer>();
-		for(int i = 0; i < numDoor; i++)
+		int high = upperBound - lowerBound + 1;   //[下界，上界]之间包含的元素个数
+		int removal = 2;
+
+		Integer[] doorInt = new Integer[door.length];
+		for(int i = 0; i < door.length; i++)
 		{
-			doorY.add(door[i].getY());
+			doorInt[i] = door[i];
 		}
-		//����
-		Collections.sort(doorY, new Comparator<Integer>() {
+		ArrayList<Integer> usedLoc = new ArrayList<Integer>(Arrays.asList(doorInt));//出/入口所在位置  
+        ArrayList<Integer> dangerousLoc = new ArrayList<Integer>();                 //不可以建墙的位置
+        //包括：出入口
+        for(Integer i:usedLoc)
+        {
+        	dangerousLoc.add(i);
+        }
+        //也包括：上界/下界/上界减一/下界加一
+        dangerousLoc.add(upperBound);
+        dangerousLoc.add(upperBound - 1);
+        dangerousLoc.add(lowerBound);
+        dangerousLoc.add(lowerBound + 1);
+        //
+        
+		//排序
+		Collections.sort(dangerousLoc, new Comparator<Integer>() {
 		        public int compare(Integer int1, Integer int2)
 		        {
 
 		            return  int1.compareTo(int2);
 		        }
 		    });
-		//ȥ��
-		for(int i = 0,j=0; i < numDoor-1; i++)
+		int numDangerous = dangerousLoc.size();
+		//去重
+		for(int i = 0,j=0; i < numDangerous - 2; i++)
 		{
-			if(doorY.get(i) == doorY.get(i+1))
+			if(dangerousLoc.get(i) == dangerousLoc.get(i+1))
 			{
-				doorY.remove(i-j);
-				j++;
+				dangerousLoc.set(i,null);
 			}				
 		}
-		//�ҳ���ȥ��������
-		if(doorY.get(0) != rowLow + 1)
+		for(;dangerousLoc.contains(null);)
 		{
-			removalRow++;
+			dangerousLoc.remove(null);
 		}
-		if(doorY.get(doorY.size() - 1) != rowHaut - 1)
-		{
-			removalRow++;
-		}
-		
-		boolean addRow;
-		if(high - removalRow > 0)
-		{
-			addRow = true;
-		}
-		else
-		{
-			addRow = false;
-		}
-		
-		int removalColomn = 4;
-		int wide = colomnRight - colomnLeft + 1;
-		ArrayList<Integer> doorX = new ArrayList<Integer>();
-		for(int i = 0; i < numDoor; i++)
-		{
-			doorX.add(door[i].getX());
-		}
-		//����
-		Collections.sort(doorX, new Comparator<Integer>() {
-		        public int compare(Integer int1, Integer int2)
-		        {
 
-		            return  int1.compareTo(int2);
-		        }
-		    });
-		//ȥ��
-		for(int i = 0,j=0; i < numDoor-1; i++)
-		{
-			if(doorX.get(i) == doorX.get(i+1))
+		//可以建墙的位置
+		ArrayList<Integer> useableLoc = new ArrayList<Integer>();
+		for(int i = 0; i < high; i++)
+		{   
+
+			if(!dangerousLoc.contains(lowerBound + i))
 			{
-				doorX.remove(i-j);
-				j++;
-			}				
-		}
-		//�ҳ���ȥ��������
-		if(doorX.get(0) != colomnLeft + 1)
-		{
-			removalColomn++;
-		}
-		if(doorX.get(doorX.size() - 1) != colomnRight-1)
-		{
-			removalColomn++;
+				useableLoc.add(lowerBound+i);
+			}
 		}
 		
-		boolean addColomn;
-		if(high - removalColomn > 0)
+		return useableLoc;		
+	}
+	
+	/*
+	 * 作用：在(min , max)之间生成随机数
+	 * 输入：所需生成的随机数的上下界
+	 * 输出：规定范围内的一个整数
+	 */
+	public int randomRange(int min, int max)
+	{
+		Random select = new Random();
+		return select.nextInt(max-min-1)+min+1;
+	}
+	
+	/*
+	 * 作用：在随机选定的一行生成墙
+	 * 输入：可用的行，要生成的墙的左右范围
+	 * 输出：选定的行
+	 */
+	public int createMurRow(ArrayList<Integer> mur, int colLeft, int colRight)
+	{
+		Random select = new Random();
+		int index = select.nextInt(mur.size()); 
+		int s = mur.get(index);
+		for(int i = colLeft; i < colRight; i++)
 		{
-			addColomn = true;
+			laby[s][i] = MUR;
 		}
-		else
+		return s;
+	}
+	/*
+	 * 作用：在随机选定的一列生成墙
+	 * 输入：可用的列，要生成的墙的上下范围
+	 * 输出：选定的列
+	 */
+	public int createMurCol(ArrayList<Integer> mur, int rowLow, int rowHigh)
+	{
+		Random select = new Random();
+		int index = select.nextInt(mur.size()); 
+		int s = mur.get(index);
+		for(int i = rowLow; i < rowHigh; i++)
 		{
-			addColomn = false;
+			laby[i][s] = MUR;
+		}
+		return s;
+	}
+	
+	public void divAndCon(int rowLow, int rowHigh, int colLeft, int colRight, Point...door)
+	{
+		//取出出入口的行数
+		int[] doorRow = new int[door.length];
+		for(int i = 0; i < door.length; i++)
+		{
+			doorRow[i] = door[i].getX();
+		}
+		//分析当前状态下是否可以建横墙
+		ArrayList<Integer> rowUseable = new ArrayList<Integer>();
+		rowUseable = createMurable(rowLow,rowHigh,doorRow);
+	
+		//取出出入口的列数
+		int[] doorCol = new int[door.length];
+		for(int i = 0; i < door.length; i++)
+		{
+			doorCol[i] = door[i].getY();
+		}
+		//分析当前情况下是否可以建竖墙
+		ArrayList<Integer> colUseable = new ArrayList<Integer>();
+		colUseable = createMurable(colLeft,colRight,doorCol);
+	
+		//如果横或竖都不能建墙，则递归结束
+		if(rowUseable.isEmpty() || colUseable.isEmpty())
+					return;
+		//建横墙
+		int rowMur = createMurRow(rowUseable, colLeft, colRight);
+		//建竖墙		
+	    int colMur = createMurCol(colUseable, rowLow, rowHigh);
+		
+		//定义建墙后新生成的四个小区域
+		ArrayList<Point> zone1 = new ArrayList<Point>(5);   //左上角
+		ArrayList<Point> zone2 = new ArrayList<Point>(5);   //右上角
+		ArrayList<Point> zone3 = new ArrayList<Point>(5);   //左下角
+		ArrayList<Point> zone4 = new ArrayList<Point>(5);   //右下角
+		
+		//将原始出入口添加到四个新形成的区域中
+		for(int i = 0; i < door.length; i++)
+		{
+			if(doorRow[i] < rowMur && doorCol[i] < colMur)
+			{
+				zone1.add(door[i]);
+			}
+			else if(doorRow[i] < rowMur && doorCol[i] > colMur)
+			{
+				zone2.add(door[i]);
+			}
+			else if(doorRow[i] > rowMur && doorCol[i] < colMur)
+			{
+				zone3.add(door[i]);
+			}
+			else if(doorRow[i] > rowMur && doorCol[i] > colMur)
+			{
+				zone4.add(door[i]);
+			}
 		}
 		
-		if(addRow == false && addColomn == false)
-			return;
-		
-		
+		//打洞并将洞加入新分成的四个区域
 		Random chose = new Random();
-		int rowMur = chose.nextInt(high-5);
-		if(addRow == true)
-		{
-			for(; doorY.contains(rowMur);)
-			{
-				rowMur = chose.nextInt(high-5);
-			}
-			for(int i = colomnLeft; i < colomnRight ;i++)
-			{
-				laby[rowLow + 2 + rowMur][i] = MUR;
-			}
-			
-		}
-		int colMur = chose.nextInt(wide-5);
-		if(addColomn == true)
-		{
-			for(; doorX.contains(colMur);)
-			{
-				colMur = chose.nextInt(wide-5);
-			}
-			for(int i = rowLow; i < rowHaut ;i++)
-			{
-				laby[i][colomnLeft+ 2 + colMur] = MUR;
-			}
-		}
-		
 		boolean moreHole = chose.nextBoolean();
-		if(moreHole)	//���ŵ�ǽ���������������ŵ�ǽ����һ��
+		if(moreHole)	//竖墙上有两个洞，横着的墙上有一个
 		{
-			int rowHole = chose.nextInt(rowMur);         //�ڵ�0�е���ǽ֮��ѡһ�д�
-			laby[rowLow + 1 + rowHole][colomnLeft+ 2 + colMur] = SPACE;
-
-			rowHole = chose.nextInt(rowHaut-rowMur-4);         //�ں�ǽ�����һ��֮��ѡһ�д�
-			laby[rowHaut - 1 - rowHole][colomnLeft+ 2 + colMur] = SPACE;
+			int rowHole = randomRange(rowLow,rowMur);         
+			laby[rowHole][colMur] = SPACE;
+			zone1.add(new Point(rowHole,colMur));
+			zone2.add(new Point(rowHole,colMur));
+			
+			rowHole = randomRange(rowMur, rowHigh);         
+			laby[rowHole][colMur] = SPACE;
+			zone3.add(new Point(rowHole,colMur));
+			zone4.add(new Point(rowHole,colMur));
 			
 			if(chose.nextBoolean())
 			{
-				int colHole = chose.nextInt(colMur);
-				laby[rowLow + 2 + rowMur][colomnLeft+ 1 + colHole] = SPACE;				
+				int colHole = randomRange(colLeft,colMur);   
+				laby[rowMur][colHole] = SPACE;
+				zone1.add(new Point(rowMur,colHole));
+				zone3.add(new Point(rowMur,colHole));
 			}
 			else
 			{
-				int colHole = chose.nextInt(colomnRight - colMur -4);
-				laby[rowLow + 2 + rowMur][colomnRight - colHole - 1] = SPACE;	
+				int colHole = randomRange(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
+				laby[rowMur][colHole] = SPACE;
+				zone2.add(new Point(rowMur,colHole));
+				zone4.add(new Point(rowMur,colHole));
 			}
 		}
-		else           //���ŵ�ǽ���������������ŵ���һ��
+		else           //横着的墙上有两个洞，竖着的有一个
 		{
-			int colHole = chose.nextInt(colMur);
-		    laby[rowLow + 2 + rowMur][colomnLeft+ 1 + colHole] = SPACE;
+			int colHole = randomRange(colLeft,colMur);   
+			laby[rowMur][colHole] = SPACE;
+			zone1.add(new Point(rowMur,colHole));
+			zone3.add(new Point(rowMur,colHole));
 			
-		    colHole = chose.nextInt(colomnRight-colMur-4);
-			laby[rowLow + 2 + rowMur][colomnRight - colHole - 1] = SPACE;
+			colHole = randomRange(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
+			laby[rowMur][colHole] = SPACE;
+			zone2.add(new Point(rowMur,colHole));
+			zone4.add(new Point(rowMur,colHole));
 			
 			if(chose.nextBoolean())
 			{
-				int rowHole = chose.nextInt(rowMur);
-				laby[rowLow + 1 + rowHole][colomnLeft+ 2 + colMur] = SPACE;			
-			}
+				int rowHole = randomRange(rowLow,rowMur);         
+				laby[rowHole][colMur] = SPACE;
+				zone1.add(new Point(rowHole,colMur));
+				zone2.add(new Point(rowHole,colMur));			}
 			else
 			{
-				int rowHole = chose.nextInt(rowHaut - rowMur -4);
-				laby[rowHaut - 1 - rowHole][colomnLeft+ 2 + colMur] = SPACE;	
+				int rowHole = randomRange(rowMur, rowHigh);         
+				laby[rowHole][colMur] = SPACE;
+				zone3.add(new Point(rowHole,colMur));
+				zone4.add(new Point(rowHole,colMur));
 			}
 			
 		}
-		return;
+	
+		//自身递归调用，分别在四个小区域内重复上述操作
+		divAndCon(rowLow,rowMur,colLeft,colMur,zone1.toArray(new Point[zone1.size()]));          //区域1
+		divAndCon(rowLow,rowMur,colMur,colRight,zone2.toArray(new Point[zone2.size()]));	 //区域2    
+		divAndCon(rowMur,rowHigh,colLeft,colMur,zone3.toArray(new Point[zone3.size()]));	 //区域3
+		divAndCon(rowMur,rowHigh,colMur,colRight,zone4.toArray(new Point[zone4.size()]));	 //区域4
 	}
 	
 	public String toString()
@@ -350,10 +302,13 @@ public class LabyMaker {
 
 	public static void main(String[] agrs)
 	{
-		LabyMaker laby1 = new LabyMaker(20);
-		Point in = new Point(1,1);
-		Point out = new Point(laby1.getSize()-1,laby1.getSize()-2);
-		laby1.DAC(laby1.getSize()-1, 0, 0, laby1.getSize()-1, in, out);
+		System.out.println("亲爱的帅比你想要多大的迷宫呀");  
+	        Scanner sc = new Scanner(System.in);
+        	int size = sc.nextInt();
+		LabyMaker laby1 = new LabyMaker(size);
+		Point in = new Point(1,0);
+    		Point out = new Point(laby1.getSize()-1,laby1.getSize());
+        	laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, in, out);
 		System.out.print(laby1);
 	}
 }
