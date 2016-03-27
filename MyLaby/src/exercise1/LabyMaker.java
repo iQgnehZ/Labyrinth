@@ -17,7 +17,7 @@ public class LabyMaker {
 	private int size;
 	private char[][] laby;
 	
-	public LabyMaker(int size)
+	public LabyMaker(int size, int in, int out)
 	{
 		this.size = size;
 		laby = new char[this.size][this.size];
@@ -37,14 +37,14 @@ public class LabyMaker {
 					{
 						laby[i][j] = SPACE;
 					}
-					laby[1][0] = SPACE;
-					laby[this.size-2][this.size-1] = SPACE;
 			}
 		}
 		for(int i = 0; i < this.size; i++)
 		{
 				laby[this.size-1][i] = MUR;
 		}
+		laby[in][0] = SPACE;
+		laby[out][this.size-1] = SPACE;
 	}
 
 	/*
@@ -115,16 +115,7 @@ public class LabyMaker {
 		return useableLoc;		
 	}
 	
-	/*
-	 * 作用：在(min , max)之间生成随机数
-	 * 输入：所需生成的随机数的上下界
-	 * 输出：规定范围内的一个整数
-	 */
-	public int randomRange(int min, int max)
-	{
-		Random select = new Random();
-		return select.nextInt(max-min-1)+min+1;
-	}
+	
 	
 	/*
 	 * 作用：在随机选定的一行生成墙
@@ -221,26 +212,26 @@ public class LabyMaker {
 		boolean moreHole = chose.nextBoolean();
 		if(moreHole)	//竖墙上有两个洞，横着的墙上有一个
 		{
-			int rowHole = randomRange(rowLow,rowMur);         
+			int rowHole = RandomRange.getRand(rowLow,rowMur);         
 			laby[rowHole][colMur] = SPACE;
 			zone1.add(new Point(rowHole,colMur));
 			zone2.add(new Point(rowHole,colMur));
 			
-			rowHole = randomRange(rowMur, rowHigh);         
+			rowHole = RandomRange.getRand(rowMur, rowHigh);         
 			laby[rowHole][colMur] = SPACE;
 			zone3.add(new Point(rowHole,colMur));
 			zone4.add(new Point(rowHole,colMur));
 			
 			if(chose.nextBoolean())
 			{
-				int colHole = randomRange(colLeft,colMur);   
+				int colHole = RandomRange.getRand(colLeft,colMur);   
 				laby[rowMur][colHole] = SPACE;
 				zone1.add(new Point(rowMur,colHole));
 				zone3.add(new Point(rowMur,colHole));
 			}
 			else
 			{
-				int colHole = randomRange(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
+				int colHole = RandomRange.getRand(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
 				laby[rowMur][colHole] = SPACE;
 				zone2.add(new Point(rowMur,colHole));
 				zone4.add(new Point(rowMur,colHole));
@@ -248,25 +239,25 @@ public class LabyMaker {
 		}
 		else           //横着的墙上有两个洞，竖着的有一个
 		{
-			int colHole = randomRange(colLeft,colMur);   
+			int colHole = RandomRange.getRand(colLeft,colMur);   
 			laby[rowMur][colHole] = SPACE;
 			zone1.add(new Point(rowMur,colHole));
 			zone3.add(new Point(rowMur,colHole));
 			
-			colHole = randomRange(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
+			colHole = RandomRange.getRand(colMur, colRight);;     //在竖墙到最后一列之间选一列打洞
 			laby[rowMur][colHole] = SPACE;
 			zone2.add(new Point(rowMur,colHole));
 			zone4.add(new Point(rowMur,colHole));
 			
 			if(chose.nextBoolean())
 			{
-				int rowHole = randomRange(rowLow,rowMur);         
+				int rowHole = RandomRange.getRand(rowLow,rowMur);         
 				laby[rowHole][colMur] = SPACE;
 				zone1.add(new Point(rowHole,colMur));
 				zone2.add(new Point(rowHole,colMur));			}
 			else
 			{
-				int rowHole = randomRange(rowMur, rowHigh);         
+				int rowHole = RandomRange.getRand(rowMur, rowHigh);         
 				laby[rowHole][colMur] = SPACE;
 				zone3.add(new Point(rowHole,colMur));
 				zone4.add(new Point(rowHole,colMur));
@@ -275,7 +266,7 @@ public class LabyMaker {
 		}
 	
 		//自身递归调用，分别在四个小区域内重复上述操作
-		divAndCon(rowLow,rowMur,colLeft,colMur,zone1.toArray(new Point[zone1.size()]));          //区域1
+		divAndCon(rowLow,rowMur,colLeft,colMur,zone1.toArray(new Point[zone1.size()]));   //区域1
 		divAndCon(rowLow,rowMur,colMur,colRight,zone2.toArray(new Point[zone2.size()]));	 //区域2    
 		divAndCon(rowMur,rowHigh,colLeft,colMur,zone3.toArray(new Point[zone3.size()]));	 //区域3
 		divAndCon(rowMur,rowHigh,colMur,colRight,zone4.toArray(new Point[zone4.size()]));	 //区域4
@@ -303,12 +294,17 @@ public class LabyMaker {
 	public static void main(String[] agrs)
 	{
 		System.out.println("亲爱的帅比你想要多大的迷宫呀");  
-	        Scanner sc = new Scanner(System.in);
-        	int size = sc.nextInt();
-		LabyMaker laby1 = new LabyMaker(size);
-		Point in = new Point(1,0);
-    		Point out = new Point(laby1.getSize()-1,laby1.getSize());
-        	laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, in, out);
+        Scanner sc = new Scanner(System.in);
+        int size = sc.nextInt();
+        int in = RandomRange.getRand(0, size);
+        int out = RandomRange.getRand(0, size);
+		LabyMaker laby1 = new LabyMaker(size,in,out);
+		System.out.println("in = " + in);
+		Point enter = new Point(in,0);
+		
+		System.out.println("out = "+ out);
+		Point exit = new Point(out,laby1.getSize());
+        laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, enter, exit);
 		System.out.print(laby1);
 	}
 }
@@ -330,5 +326,19 @@ class Point
 	
 	public int getY() {
 		return y;
+	}
+}
+
+class RandomRange
+{	
+	/*
+	 * 作用：在(min , max)之间生成随机数
+	 * 输入：所需生成的随机数的上下界
+	 * 输出：规定范围内的一个整数
+	 */
+	public static int getRand(int min, int max)
+	{
+		Random select = new Random();
+		return select.nextInt(max-min-1)+min+1;
 	}
 }
