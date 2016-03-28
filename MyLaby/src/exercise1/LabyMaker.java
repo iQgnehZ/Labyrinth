@@ -294,18 +294,39 @@ public class LabyMaker {
 	public static void main(String[] agrs)
 	{
 		System.out.println("亲爱的帅比你想要多大的迷宫呀");  
-        Scanner sc = new Scanner(System.in);
-        int size = sc.nextInt();
-        int in = RandomRange.getRand(0, size);
-        int out = RandomRange.getRand(0, size);
-		LabyMaker laby1 = new LabyMaker(size,in,out);
-		System.out.println("in = " + in);
-		Point enter = new Point(in,0);
-		
-		System.out.println("out = "+ out);
-		Point exit = new Point(out,laby1.getSize());
-        laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, enter, exit);
-		System.out.print(laby1);
+        
+        	int size = 0;
+	        for(;;)
+	        {
+		        try{
+		        	Scanner sc = new Scanner(System.in);
+		        	size = sc.nextInt();
+		        }
+		        catch(InputMismatchException e)
+		        {
+		        	System.out.println("瞎输啥呢亲爱的->_->");
+		        	System.out.println("再输一次，乖~");
+		        	continue;
+		        }
+		        if(size <= 2)
+		        {
+		        	System.out.println("这也太小了点吧->_->");
+		        	System.out.println("快来输个大点的~~");		
+		        }
+		        else
+		        {
+		        	break;
+		        }
+	        }
+	        
+	        
+	        int in = RandomRange.getRand(0, size);
+	        int out = RandomRange.getRand(0, size);
+			LabyMaker laby1 = new LabyMaker(size,in,out);
+			Point enter = new Point(in,0);
+			Point exit = new Point(out,laby1.getSize());
+	        laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, enter, exit);
+			System.out.print(laby1);
 	}
 }
 
