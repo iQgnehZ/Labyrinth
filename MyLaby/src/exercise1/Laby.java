@@ -2,29 +2,68 @@ package exercise1;
 
 import java.lang.Math.*;
 import java.util.Random;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.InputMismatchException;
+import java.util.Queue;
 import java.lang.*;
 import java.util.Scanner;
 
 public class Laby {
-	public static final char START = 'X';
-	public static final char END = 'O';
 	public static final char SPACE = ' ';
-	public static final char MUR = 'M';
+	public static final char MUR = '~';
+	public static final char PATH = '@';
+	public static final int BLOCK = -2;
+	public static final int CONNECT = -1;
+	public static final int RIGHT = 1;
+	public static final int UP = 2;
+	public static final int LEFT = 3;
+	public static final int DOWN = 4;
+	public static final int START = 0;
+	public static final int END = 5;
 	private int size;
 	private char[][] laby;
+	private Point enter;
+	private Point exit;
+	ArrayDeque<Point> search = new ArrayDeque<Point>();
 	
 	public Laby()
 	{
-		this(5,5,5);
-	}
-	public Laby(int size, int in, int out)
-	{
-		this.size = size;
+		System.out.println("亲爱的帅比你想要多大的迷宫呀");  
+        
+        this.size = 0;
+        for(;;)
+        {
+	        try{
+	        	Scanner sc = new Scanner(System.in);
+	        	size = sc.nextInt();
+	        }
+	        catch(InputMismatchException e)
+	        {
+	        	System.out.println("瞎输啥呢亲爱的->_->");
+	        	System.out.println("再输一次，乖~");
+	        	continue;
+	        }
+	        if(size <= 2)
+	        {
+	        	System.out.println("这也太小了点吧->_->");
+	        	System.out.println("快来输个大点的~~");		
+	        }
+	        else
+	        {
+	        	break;
+	        }
+        }
+	        
+        int in = RandomRange.getRand(0, size-1);
+        int out = RandomRange.getRand(0, size-1);
+		this.enter = new Point(in,0);
+		this.exit = new Point(out,this.size -1);
+		
 		laby = new char[this.size][this.size];
 		for(int i = 0; i < this.size; i++)
 		{
@@ -276,9 +315,159 @@ public class Laby {
 		divAndCon(rowMur,rowHigh,colLeft,colMur,zone3.toArray(new Point[zone3.size()]));	 //区域3
 		divAndCon(rowMur,rowHigh,colMur,colRight,zone4.toArray(new Point[zone4.size()]));	 //区域4
 	}
+
+	public Laby creatLaby(Laby laby)
+	{
+	    laby.divAndCon(0,laby.getSize()-1, 0, laby.getSize()-1, laby.getEnter(), laby.getExit());
+	    return laby;
+	}
+
+	public ArrayDeque<Point> ShortestPath ( Point in, Point out)
+	{
+		int[][] visited = new int[size][size];
+		for( int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+				if(laby[i][j] == MUR)
+					visited[i][j] = BLOCK;//此处不可达
+				else
+					visited[i][j] = CONNECT;//此处尚未遍历
+		visited[in.getX()][in.getY()] = START;//此处为入口
+		visited[out.getX()][out.getY()] = END;//此处为出口
+		
+		search.push(in);
+		while(!search.isEmpty())
+		{
+			Point first = search.pop();
+			
+			if(hasLeft(first))
+			{
+				if(visited[first.getX()][first.getY()-1] == END)
+				{
+					visited[first.getX()][first.getY()-1] = LEFT;
+					break;
+				}
+				else if(visited[first.getX()][first.getY()-1] == CONNECT)
+				{
+					visited[first.getX()][first.getY()-1] = LEFT;
+					search.push(new Point(first.getX(),first.getY()-1));
+				}
+			}
+			if(hasRight(first))
+			{
+				if(visited[first.getX()][first.getY() + 1] == END)
+				{
+					visited[first.getX()][first.getY() + 1] = RIGHT;
+					break;
+				}
+				else if(visited[first.getX()][first.getY() + 1] == CONNECT)
+				{
+					visited[first.getX()][first.getY() + 1] = RIGHT;
+					search.push(new Point(first.getX(),first.getY() + 1));
+				}
+			}
+			if(hasUp(first))
+			{
+				if(visited[first.getX()-1][first.getY()] == END)
+				{
+					visited[first.getX()-1][first.getY()] = UP;
+					break;
+				}
+				else if(visited[first.getX()-1][first.getY()] == CONNECT)
+				{
+					visited[first.getX()-1][first.getY()] = UP;
+					search.push(new Point(first.getX()-1,first.getY()));
+				}
+			}
+			if(hasDown(first))
+			{
+				if(visited[first.getX()+ 1][first.getY()] == END)
+				{
+					visited[first.getX()+ 1][first.getY()] = DOWN;
+					break;
+				}
+				else if(visited[first.getX() +1][first.getY()] == CONNECT)
+				{
+					visited[first.getX() +1][first.getY()] = DOWN;
+					search.push(new Point(first.getX()+1,first.getY() ));
+				}
+			}	
+			
+		}
+		search.clear();		
+		for(Point i = new Point(exit.getX(),exit.getY()); !i.equals(enter);)
+		{
+			if(visited[i.getX()][i.getY()] == UP)
+			{
+				i.setX(i.getX()+1);
+				search.add(new Point(i.getX(),i.getY()));
+				continue;
+			}
+				
+			if(visited[i.getX()][i.getY()] == DOWN)
+			{
+				i.setX(i.getX()-1);
+				search.add(new Point(i.getX(),i.getY()));
+				continue;
+			}
+				
+			if(visited[i.getX()][i.getY()] == LEFT)
+			{
+				i.setY(i.getY()+1);
+				search.add(new Point(i.getX(),i.getY()));
+				continue;
+			}
+				
+			if(visited[i.getX()][i.getY()] == RIGHT)
+			{
+				i.setY(i.getY()-1);
+				search.add(new Point(i.getX(),i.getY()));
+				continue;
+			}		
+		}
+		return search;
+	}
 	
+	public void showPath()
+	{
+		int i = 0;
+		laby[exit.getX()][exit.getY()] = PATH;
+		while(!search.isEmpty())
+		{
+			Point p = search.pop();
+			laby[p.getX()][p.getY()] = PATH;
+		}
+	}
+	
+	public boolean hasLeft(Point p)
+	{
+		return (p.getY() != 0)?true:false;
+	}
+	public boolean hasRight(Point p)
+	{
+		return (p.getY() != size-1)?true:false;
+	}
+	public boolean hasUp(Point p)
+	{
+		return (p.getX() != 0)?true:false;
+	}
+	public boolean hasDown(Point p)
+	{
+		return (p.getX() != size-1)?true:false;
+	}
 	public char[][] getLaby() {
 		return laby;
+	}
+	
+	public int getSize() {
+		return size;
+	}
+
+	public Point getEnter() {
+		return enter;
+	}
+
+	public Point getExit() {
+		return exit;
 	}
 
 	public String toString()
@@ -295,47 +484,14 @@ public class Laby {
 		return s;
 			
 	}
-	
-	public int getSize() {
-		return size;
-	}
 
 	public static void main(String[] agrs)
 	{
-		System.out.println("亲爱的帅比你想要多大的迷宫呀");  
-        
-        int size = 0;
-        for(;;)
-        {
-	        try{
-	        	Scanner sc = new Scanner(System.in);
-	        	size = sc.nextInt();
-	        }
-	        catch(InputMismatchException e)
-	        {
-	        	System.out.println("瞎输啥呢亲爱的->_->");
-	        	System.out.println("再输一次，乖~");
-	        	continue;
-	        }
-	        if(size <= 2)
-	        {
-	        	System.out.println("这也太小了点吧->_->");
-	        	System.out.println("快来输个大点的~~");		
-	        }
-	        else
-	        {
-	        	break;
-	        }
-        }
-        
-        
-        int in = RandomRange.getRand(0, size);
-        int out = RandomRange.getRand(0, size);
-		Laby laby1 = new Laby(size,in,out);
-		Point enter = new Point(in,0);
-		Point exit = new Point(out,laby1.getSize());
-        laby1.divAndCon(0,laby1.getSize()-1, 0, laby1.getSize()-1, enter, exit);
-		System.out.print(laby1);
+		Laby laby = new Laby();
+        laby.creatLaby(laby);
+        laby.ShortestPath(laby.enter, laby.exit);
+        laby.showPath();
+        System.out.print(laby);        
 	}
 }
 
