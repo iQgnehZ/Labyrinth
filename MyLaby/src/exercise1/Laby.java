@@ -17,13 +17,13 @@ public class Laby {
 	public static final char SPACE = ' ';
 	public static final char MUR = '~';
 	public static final char PATH = '@';
-	public static final int BLOCK = -2;
-	public static final int CONNECT = -1;
+	public static final int BLOCK = 8;
+	public static final int CONNECT = 0;
 	public static final int RIGHT = 1;
 	public static final int UP = 2;
 	public static final int LEFT = 3;
 	public static final int DOWN = 4;
-	public static final int START = 0;
+	public static final int START = 6;
 	public static final int END = 5;
 	private int size;
 	private char[][] laby;
@@ -90,7 +90,41 @@ public class Laby {
 		laby[in][0] = SPACE;
 		laby[out][this.size-1] = SPACE;
 	}
-
+	
+	public Laby(int size)
+	{
+        this.size = size;
+        int in = RandomRange.getRand(0, size-1);
+        int out = RandomRange.getRand(0, size-1);
+		this.enter = new Point(in,0);
+		this.exit = new Point(out,this.size -1);
+		
+		laby = new char[this.size][this.size];
+		for(int i = 0; i < this.size; i++)
+		{
+				laby[0][i] = MUR;
+		}
+		for(int i = 1; i < this.size-1; i++)
+		{
+			for(int j = 0; j < this.size; j++)
+			{
+					if(j == 0 || j == this.size-1)
+					{
+						laby[i][j] = MUR;
+					}
+					else
+					{
+						laby[i][j] = SPACE;
+					}
+			}
+		}
+		for(int i = 0; i < this.size; i++)
+		{
+				laby[this.size-1][i] = MUR;
+		}
+		laby[in][0] = SPACE;
+		laby[out][this.size-1] = END;
+	}
 	/*
 	 * 作用：检测上下界之间能不能建墙
 	 * 输入：上下界及出入口的位置
@@ -316,7 +350,7 @@ public class Laby {
 		divAndCon(rowMur,rowHigh,colMur,colRight,zone4.toArray(new Point[zone4.size()]));	 //区域4
 	}
 
-	public Laby creatLaby(Laby laby)
+	public Laby createLaby(Laby laby)
 	{
 	    laby.divAndCon(0,laby.getSize()-1, 0, laby.getSize()-1, laby.getEnter(), laby.getExit());
 	    return laby;
@@ -334,10 +368,10 @@ public class Laby {
 		visited[in.getX()][in.getY()] = START;//此处为入口
 		visited[out.getX()][out.getY()] = END;//此处为出口
 		
-		search.push(in);
+		search.add(in);
 		while(!search.isEmpty())
 		{
-			Point first = search.pop();
+			Point first = search.remove();
 			
 			if(hasLeft(first))
 			{
@@ -349,7 +383,7 @@ public class Laby {
 				else if(visited[first.getX()][first.getY()-1] == CONNECT)
 				{
 					visited[first.getX()][first.getY()-1] = LEFT;
-					search.push(new Point(first.getX(),first.getY()-1));
+					search.add(new Point(first.getX(),first.getY()-1));
 				}
 			}
 			if(hasRight(first))
@@ -362,7 +396,7 @@ public class Laby {
 				else if(visited[first.getX()][first.getY() + 1] == CONNECT)
 				{
 					visited[first.getX()][first.getY() + 1] = RIGHT;
-					search.push(new Point(first.getX(),first.getY() + 1));
+					search.add(new Point(first.getX(),first.getY() + 1));
 				}
 			}
 			if(hasUp(first))
@@ -375,7 +409,7 @@ public class Laby {
 				else if(visited[first.getX()-1][first.getY()] == CONNECT)
 				{
 					visited[first.getX()-1][first.getY()] = UP;
-					search.push(new Point(first.getX()-1,first.getY()));
+					search.add(new Point(first.getX()-1,first.getY()));
 				}
 			}
 			if(hasDown(first))
@@ -388,11 +422,12 @@ public class Laby {
 				else if(visited[first.getX() +1][first.getY()] == CONNECT)
 				{
 					visited[first.getX() +1][first.getY()] = DOWN;
-					search.push(new Point(first.getX()+1,first.getY() ));
+					search.add(new Point(first.getX()+1,first.getY() ));
 				}
 			}	
 			
 		}
+	
 		search.clear();		
 		for(Point i = new Point(exit.getX(),exit.getY()); !i.equals(enter);)
 		{
@@ -434,7 +469,10 @@ public class Laby {
 		while(!search.isEmpty())
 		{
 			Point p = search.pop();
-			laby[p.getX()][p.getY()] = PATH;
+			if(p.getY()!= exit.getY())
+			{
+				laby[p.getX()][p.getY()] = PATH;
+			}	
 		}
 	}
 	
@@ -485,14 +523,6 @@ public class Laby {
 			
 	}
 
-	public static void main(String[] agrs)
-	{
-		Laby laby = new Laby();
-        laby.creatLaby(laby);
-        laby.ShortestPath(laby.enter, laby.exit);
-        laby.showPath();
-        System.out.print(laby);        
-	}
 }
 
 class RandomRange

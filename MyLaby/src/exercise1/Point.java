@@ -18,4 +18,28 @@ public class Point
 	public int getY() {
 		return y;
 	}
+	
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+	}
+
+	public boolean equals(Point p)
+	{
+		if(this.x == p.getX() && this.y == p.getY())
+			return true;
+		return false;
+	}
+	
+	public int hashCode() {
+	    int hash = 7;
+	    hash = 71 * hash + this.x;
+	    hash = 71 * hash + this.y;
+	    return hash;
+	}
+	
+	
 }
